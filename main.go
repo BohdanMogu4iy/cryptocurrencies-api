@@ -1,5 +1,7 @@
 package main
 
-func main() {
+import "cryptocurrencies-api/app"
 
+func main() {
+	app.RunServer()
 }
