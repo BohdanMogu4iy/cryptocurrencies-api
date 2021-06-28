@@ -5,9 +5,11 @@ import (
 	"cryptocurrencies-api/models"
 	u "cryptocurrencies-api/utils"
 	"fmt"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/schema"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
+	"time"
 )
 
 var decoder = schema.NewDecoder()
@@ -123,10 +125,51 @@ var LoginAccount = func(w http.ResponseWriter, r *http.Request) {
 
 	response := config.ControllersConfig.Messages["AOK"]
 	response["accessToken"] = accessToken
+
 	u.Respond(w, response)
 }
 
-var TestController = func(w http.ResponseWriter, r *http.Request) {
-	response := u.Message(true, "Test response")
+var RefreshToken = func(w http.ResponseWriter, r *http.Request) {
+
+	userId := r.Context().Value("UserId")
+
+	accessToken, err := GenerateToken(userId, config.JwtConfig.AccessTokenExpiresMinutes)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		u.Respond(w, u.Message(false, "Internal Server Error"))
+		return
+	}
+
+	refreshToken, err :=  GenerateToken(userId, config.JwtConfig.RefreshTokenExpiresMinutes)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		u.Respond(w, u.Message(false, "Internal Server Error"))
+		return
+	}
+
+	userToken := models.TokenSchema{UserId: r.Context().Value("UserId")}
+	if _, err := models.TokenStorage.UpdateValues([]interface{}{&userToken}); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		u.Respond(w, u.Message(false, "Internal Server Error"))
+		return
+	}
+
+	response := config.ControllersConfig.Messages["AccountHasBeenCreated"]
+	response["accessToken"] = accessToken
+	response["refreshToken"] = refreshToken
+
 	u.Respond(w, response)
+}
+
+func GenerateToken(userId interface{}, expireMinutes uint) (string, error) {
+	exp := time.Now().Add(time.Minute * time.Duration(expireMinutes)).Unix()
+
+	tokenClaims := &config.TokenClaims{
+		UserId: userId,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: exp,
+		},
+	}
+
+	return jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tokenClaims).SignedString([]byte(config.JwtConfig.Secret))
 }

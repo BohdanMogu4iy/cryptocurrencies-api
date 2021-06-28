@@ -10,7 +10,7 @@ import (
 )
 
 type StandardFields struct {
-	Id int64 `json:"id"`
+	Id interface{} `json:"Id"`
 }
 
 type StandardFileSchema struct {
@@ -23,7 +23,7 @@ type Storage struct {
 	File       ConcurrencyFile
 }
 
-func (s *Storage) fillFile(file *os.File) error  {
+func (s *Storage) FillFile(file *os.File) error  {
 	s.File.FileReadWriteMutex.Lock()
 	defer s.File.FileReadWriteMutex.Unlock()
 
@@ -36,7 +36,7 @@ func (s *Storage) fillFile(file *os.File) error  {
 	return nil
 }
 
-func (s *Storage) truncateFile(file *os.File) error  {
+func (s *Storage) TruncateFile(file *os.File) error  {
 	s.File.FileReadWriteMutex.Lock()
 	defer s.File.FileReadWriteMutex.Unlock()
 
@@ -59,7 +59,7 @@ func (s *Storage) InitStorage(){
 		if _, err := os.Create(s.File.FileName); err != nil{
 			log.Fatal(err)
 		}
-		if err := s.fillFile(file); err != nil {
+		if err := s.FillFile(file); err != nil {
 			log.Fatal(err)
 		}
 	case err != nil:
@@ -75,10 +75,10 @@ func (s *Storage) InitStorage(){
 		}else {
 			var FileData StandardFileSchema
 			if err := u.UnmarshalJSON(b, &FileData); err != nil{
-				if err := s.truncateFile(file); err != nil {
+				if err := s.TruncateFile(file); err != nil {
 					log.Fatal(err)
 				}
-				if err := s.fillFile(file); err != nil {
+				if err := s.FillFile(file); err != nil {
 					log.Fatal(err)
 				}
 			}
@@ -86,67 +86,73 @@ func (s *Storage) InitStorage(){
 	}
 }
 
-func (s *Storage) InsertValues(values []interface{}) error {
+func (s *Storage) InsertValues(values []interface{}) ([]interface{}, error) {
 	s.File.LockFile()
 	defer s.File.UnlockFile()
 
 	oldByteValue, err := s.File.SafeRead()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var FileData StandardFileSchema
 	if err := json.Unmarshal(oldByteValue, &FileData); err != nil {
-		return err
+		return nil, err
 	}
 
-	for _, value := range values {
+	insertedValues := make([]interface{}, 0)
+
+	for i, value := range values {
 		reflect.ValueOf(value).Elem().FieldByName("StandardFields").Set(reflect.ValueOf(StandardFields{FileData.LastId+1}))
 		FileData.Items = append(FileData.Items, value)
+		insertedValues = append(insertedValues, FileData.Items[i])
 		FileData.LastId++
 	}
 
 	newByteValue, _ := json.MarshalIndent(FileData, " ", "\t")
 	if err := s.File.SafeWrite(newByteValue); err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return insertedValues, nil
 }
 
-func (s Storage) UpdateValues(values []interface{}) error {
+func (s Storage) UpdateValues(values []interface{}) (int, error) {
 	s.File.LockFile()
 	defer s.File.UnlockFile()
 
 	oldByteValue, err := s.File.SafeRead()
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	var FileData StandardFileSchema
 	if err := json.Unmarshal(oldByteValue, &FileData); err != nil {
-		return err
+		return 0, err
 	}
+
+	updatedCount := 0
 
 	for _, value := range values {
 		valueJson := s.UnitSchema
 		if valueByte, err := json.MarshalIndent(value, " ", "\t"); err ==  nil{
 			if err := json.Unmarshal(valueByte, &valueJson); err != nil {
-				return err
+				return 0, err
 			}
-		}else {return err}
+		}else {return 0, err}
 
 		for i, item := range FileData.Items{
 			if  valueJson.(map[string]interface{})["id"] == item.(map[string]interface{})["id"]{
 				FileData.Items[i] = valueJson
+				updatedCount++
 			}
 		}
 	}
 
 	newByteValue, _ := json.MarshalIndent(FileData, " ", "\t")
 	if err := s.File.SafeWrite(newByteValue); err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	return updatedCount, nil
 }
 
 func (s Storage) DeleteValues(values []interface{}) (int, error) {
@@ -188,7 +194,7 @@ func (s Storage) DeleteValues(values []interface{}) (int, error) {
 	return deletedCount, nil
 }
 
-func (s Storage) SelectValues(values []interface{}) ([]interface{}, error) {
+func (s Storage) SelectValues(values []interface{}, fields []string) ([]interface{}, error) {
 	s.File.LockFile()
 	defer s.File.UnlockFile()
 
@@ -212,17 +218,17 @@ func (s Storage) SelectValues(values []interface{}) ([]interface{}, error) {
 			}
 		}else {return nil, err}
 
-		for i, item := range FileData.Items{
-			if  valueJson.(map[string]interface{})["id"] == item.(map[string]interface{})["id"]{
-				selectedValues = append(selectedValues, FileData.Items[i])
+		for _, item := range FileData.Items{
+			for _, field := range fields{
+				if  valueJson.(map[string]interface{})[field] != item.(map[string]interface{})[field]{
+					goto notSelected
+				}
 			}
+			selectedValues = append(selectedValues, item)
+			notSelected:
 		}
 	}
 
-	newByteValue, _ := json.MarshalIndent(FileData, " ", "\t")
-	if err := s.File.SafeWrite(newByteValue); err != nil {
-		return nil, err
-	}
 	return selectedValues, nil
 }
 

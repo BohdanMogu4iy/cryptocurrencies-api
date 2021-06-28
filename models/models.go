@@ -14,9 +14,9 @@ type (
 	AccountSchema struct {
 		Email        string `schema:"email";json: "email"`
 		Password     string `schema:"password";json: "password"`
-		RefreshToken string `json:"refreshToken"`
 		storage.StandardFields
 	}
+
 	TokenSchema struct {
 		UserId       interface{} `json:"userId"`
 		RefreshToken string `json:"refreshToken"`
