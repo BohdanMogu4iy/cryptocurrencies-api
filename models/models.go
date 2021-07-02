@@ -12,14 +12,14 @@ var (
 
 type (
 	AccountSchema struct {
-		Email        string `schema:"email";json: "email"`
-		Password     string `schema:"password";json: "password"`
+		Login        string `schema:"Login";json:"Login"`
+		Password     string `schema:"Password";json:"Password"`
 		storage.StandardFields
 	}
 
 	TokenSchema struct {
-		UserId       interface{} `json:"userId"`
-		RefreshToken string `json:"refreshToken"`
+		UserId       interface{} `json:"UserId"`
+		RefreshToken string `json:"RefreshToken"`
 		storage.StandardFields
 	}
 )

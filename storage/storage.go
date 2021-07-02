@@ -23,7 +23,7 @@ type Storage struct {
 	File       ConcurrencyFile
 }
 
-func (s *Storage) FillFile(file *os.File) error  {
+func (s *Storage) FillStorage(file *os.File) error  {
 	s.File.FileReadWriteMutex.Lock()
 	defer s.File.FileReadWriteMutex.Unlock()
 
@@ -36,7 +36,7 @@ func (s *Storage) FillFile(file *os.File) error  {
 	return nil
 }
 
-func (s *Storage) TruncateFile(file *os.File) error  {
+func (s *Storage) TruncateStorage(file *os.File) error  {
 	s.File.FileReadWriteMutex.Lock()
 	defer s.File.FileReadWriteMutex.Unlock()
 
@@ -59,7 +59,7 @@ func (s *Storage) InitStorage(){
 		if _, err := os.Create(s.File.FileName); err != nil{
 			log.Fatal(err)
 		}
-		if err := s.FillFile(file); err != nil {
+		if err := s.FillStorage(file); err != nil {
 			log.Fatal(err)
 		}
 	case err != nil:
@@ -75,10 +75,10 @@ func (s *Storage) InitStorage(){
 		}else {
 			var FileData StandardFileSchema
 			if err := u.UnmarshalJSON(b, &FileData); err != nil{
-				if err := s.TruncateFile(file); err != nil {
+				if err := s.TruncateStorage(file); err != nil {
 					log.Fatal(err)
 				}
-				if err := s.FillFile(file); err != nil {
+				if err := s.FillStorage(file); err != nil {
 					log.Fatal(err)
 				}
 			}

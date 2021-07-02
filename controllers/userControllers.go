@@ -4,7 +4,6 @@ import (
 	"cryptocurrencies-api/config"
 	"cryptocurrencies-api/models"
 	u "cryptocurrencies-api/utils"
-	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/schema"
 	"golang.org/x/crypto/bcrypt"
@@ -24,16 +23,14 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	selected, err := models.AccountStorage.SelectValues([]interface{}{account}, []string{"Email"})
+	selected, err := models.AccountStorage.SelectValues([]interface{}{account}, []string{"Login"})
 	if err != nil{
-		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		u.Respond(w, config.ControllersConfig.Messages["InternalServerError"])
 		return
 	}
 	if len(selected) > 0 {
-		fmt.Println(selected)
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		w.WriteHeader(http.StatusNonAuthoritativeInfo)
 		u.Respond(w, config.ControllersConfig.Messages["AccountExists"])
 		return
 	}
@@ -43,7 +40,6 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 
 	insertedUser, err := models.AccountStorage.InsertValues([]interface{}{account})
 	if len(insertedUser) == 0 {
-		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		u.Respond(w, config.ControllersConfig.Messages["InternalServerError"])
 		return
@@ -51,7 +47,6 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 
 	accessToken, err := GenerateToken(account.Id, config.JwtConfig.AccessTokenExpiresMinutes)
 	if err != nil {
-		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		u.Respond(w, config.ControllersConfig.Messages["InternalServerError"])
 		return
@@ -93,13 +88,12 @@ var LoginAccount = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	selected, err := models.AccountStorage.SelectValues([]interface{}{account}, []string{"Email"})
+	selected, err := models.AccountStorage.SelectValues([]interface{}{account}, []string{"Login"})
 	if err != nil{
 		w.WriteHeader(http.StatusInternalServerError)
 		u.Respond(w, config.ControllersConfig.Messages["InternalServerError"])
 	}
 	if len(selected) == 0 {
-		fmt.Println(selected)
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		u.Respond(w, config.ControllersConfig.Messages["InvalidEmailOrPassword"])
 		return
@@ -110,7 +104,7 @@ var LoginAccount = func(w http.ResponseWriter, r *http.Request) {
 	err = bcrypt.CompareHashAndPassword([]byte(password), []byte(account.Password))
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
 		w.WriteHeader(http.StatusForbidden)
-		u.Respond(w,config.ControllersConfig.Messages["InvalidPassword"])
+		u.Respond(w, config.ControllersConfig.Messages["InvalidPassword"])
 		return
 	}
 

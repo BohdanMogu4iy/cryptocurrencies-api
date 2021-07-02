@@ -16,32 +16,27 @@ var TestController = func(w http.ResponseWriter, r *http.Request) {
 }
 
 type Currency struct {
-	Code string `json:"code"`
-	Rate string `json:"rate"`
-	Description string `json:"description"`
-	RateFloat float64 `json:"rate_float"`
+	Code        string  `json:"code"`
+	Rate        string  `json:"rate"`
+	Description string  `json:"description"`
+	RateFloat   float64 `json:"rate_float"`
 }
 
-type BpiStruct struct {
-	USD Currency `json:"USD"`
-	CNY Currency `json:"CNY"`
-}
-
-type UpdatedRate struct {
-	Updated string `json:"updated"`
-	UpdatedISO string `json:"updatedISO"`
-}
-
-type CryptocurrencyRate struct{
-	Time UpdatedRate `json:"time"`
+type CryptocurrencyRate struct {
+	Time struct {
+		Updated    string `json:"updated"`
+		UpdatedISO string `json:"updatedISO"`
+	} `json:"time"`
 	Disclaimer string `json:"disclaimer"`
-	Bpi BpiStruct `json:"bpi"`
+	Bpi        struct {
+		USD Currency `json:"USD"`
+		CNY Currency `json:"CNY"`
+	} `json:"bpi"`
 }
 
 type CryptocurrencyRateRequest struct {
 	Currency string
 }
-
 
 var BtcRate = func(w http.ResponseWriter, r *http.Request) {
 

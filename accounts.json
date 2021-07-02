@@ -1,0 +1,15 @@
+{
+ 	"items": [
+ 		{
+ 			"Id": 1,
+ 			"Login": "mogu4iy.kotygoroshko@gmail.com",
+ 			"Password": "$2a$10$Uw/AfY36a2jGEFTPH4TGsOULte0IqvI3U/m6SyiqiktOm9Li3wTO."
+ 		},
+ 		{
+ 			"Login": "mogu4iy.kotygoroshko2@gmail.com",
+ 			"Password": "$2a$10$F8fD5JW1owUTb/Hk6VXxjeDPllX7eYrNmZc2ENsRRIMRcUwilijyC",
+ 			"Id": 2
+ 		}
+ 	],
+ 	"last_id": 2
+ }

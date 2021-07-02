@@ -23,19 +23,25 @@ type server struct {
 
 func (s *server) configureRouter() {
 	s.router = mux.NewRouter()
-
 	userRouter := s.router.PathPrefix("/v1/user/").Methods("POST").Subrouter()
+	userRouter.Use(middlewares.Cors)
 	userRouter.HandleFunc("/create", controllers.CreateAccount)
 	userRouter.HandleFunc("/login", controllers.LoginAccount)
 
+	//logoutRouter := s.router.PathPrefix("/v1/user/").Methods("POST").Subrouter()
+	//logoutRouter.Use(middlewares.Cors)
+	//logoutRouter.Use(middlewares.JwtValidation)
+	//logoutRouter.HandleFunc("/logout", controllers.Logout)
+
 	refreshRouter := s.router.PathPrefix("/v1/user/").Methods("GET").Subrouter()
+	refreshRouter.Use(middlewares.Cors)
 	refreshRouter.Use(middlewares.JwtValidation)
-	refreshRouter.Use(middlewares.JwtRefreshValid)
+	refreshRouter.Use(middlewares.JwtRefreshValidation)
 	refreshRouter.HandleFunc("/refreshToken", controllers.RefreshToken)
 
 	privateRouter := s.router.PathPrefix("/v1/private/").Methods("GET").Subrouter()
+	privateRouter.Use(middlewares.Cors)
 	privateRouter.Use(middlewares.JwtValidation)
-	//privateRouter.HandleFunc("/logout", s.handlerLogoutRequest()).Methods("GET")
 	privateRouter.HandleFunc("/test", controllers.TestController)
 	privateRouter.HandleFunc("/btcRate", controllers.BtcRate)
 

@@ -63,7 +63,7 @@ func JwtValidation(next http.Handler) http.Handler {
 	})
 }
 
-func JwtRefreshValid(next http.Handler) http.Handler {
+func JwtRefreshValidation(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tokenHeader := r.Header.Get("Authorization")
 		if tokenHeader == "" {
@@ -79,7 +79,7 @@ func JwtRefreshValid(next http.Handler) http.Handler {
 			w.WriteHeader(http.StatusInternalServerError)
 			u.Respond(w, config.ControllersConfig.Messages["InternalServerError"])
 			return
-		} else if u.GetField(values, "refreshToken") != token {
+		} else if u.GetField(values, "RefreshToken") != token {
 			w.WriteHeader(http.StatusForbidden)
 			u.Respond(w, config.ControllersConfig.Messages["NotRelevantToken"])
 			return
