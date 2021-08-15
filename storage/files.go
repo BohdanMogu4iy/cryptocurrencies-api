@@ -46,21 +46,23 @@ func ThreadSafe(f *ConcurrencyFile, someFunc func(*os.File, []byte) ([]byte, err
 	return someFunc(file, data)
 }
 
-func (f *ConcurrencyFile) SafeWrite(data []byte) error{
-	_, err := ThreadSafe(f, Write, data)
-	return err
-}
-
-func Write(file *os.File, data []byte) ([]byte, error) {
+func write(file *os.File, data []byte) ([]byte, error) {
 	return nil, ioutil.WriteFile(file.Name(), data, 0644)
 }
 
-func (f *ConcurrencyFile) SafeRead() ([]byte, error){
-	return ThreadSafe(f, Read, nil)
+func (f *ConcurrencyFile) SafeWrite(data []byte) error{
+	_, err := ThreadSafe(f, write, data)
+	return err
 }
 
-func Read(file *os.File, _ []byte) ([]byte, error) {
+func read(file *os.File, _ []byte) ([]byte, error) {
 	return ioutil.ReadAll(file)
 }
+
+func (f *ConcurrencyFile) SafeRead() ([]byte, error){
+	return ThreadSafe(f, read, nil)
+}
+
+
 
 

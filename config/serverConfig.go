@@ -4,15 +4,15 @@ import (
 	"os"
 )
 
-type ServerConfigStruct struct {
+type serverConfigStruct struct {
 	Port string
 	Version string
 }
 
-var ServerConfig *ServerConfigStruct
+var ServerConfig *serverConfigStruct
 
 func init() {
-	ServerConfig = &ServerConfigStruct{}
+	ServerConfig = &serverConfigStruct{}
 	if PORT, ok := os.LookupEnv("PORT"); ok {
 		ServerConfig.Port = PORT
 	} else {ServerConfig.Port = "8000"}

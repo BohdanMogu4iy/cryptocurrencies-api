@@ -10,11 +10,6 @@ import (
 	"net/http"
 )
 
-var TestController = func(w http.ResponseWriter, r *http.Request) {
-	response := u.Message(true, "Test response")
-	u.Respond(w, response)
-}
-
 type Currency struct {
 	Code        string  `json:"code"`
 	Rate        string  `json:"rate"`
@@ -40,6 +35,8 @@ type CryptocurrencyRateRequest struct {
 
 var BtcRate = func(w http.ResponseWriter, r *http.Request) {
 
+	fmt.Println("btcRate")
+
 	req := &CryptocurrencyRateRequest{}
 
 	err := decoder.Decode(req, r.URL.Query())
@@ -61,6 +58,8 @@ var BtcRate = func(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 		return
 	}
+
+	fmt.Println(btcRate)
 
 	u.Respond(w, structs.Map(btcRate))
 }

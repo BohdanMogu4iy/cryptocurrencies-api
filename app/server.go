@@ -23,26 +23,20 @@ type server struct {
 
 func (s *server) configureRouter() {
 	s.router = mux.NewRouter()
-	userRouter := s.router.PathPrefix("/v1/user/").Methods("POST").Subrouter()
+	userRouter := s.router.PathPrefix("/" + config.ServerConfig.Version + "/user/").Methods("POST").Subrouter()
 	userRouter.Use(middlewares.Cors)
 	userRouter.HandleFunc("/create", controllers.CreateAccount)
 	userRouter.HandleFunc("/login", controllers.LoginAccount)
 
-	//logoutRouter := s.router.PathPrefix("/v1/user/").Methods("POST").Subrouter()
-	//logoutRouter.Use(middlewares.Cors)
-	//logoutRouter.Use(middlewares.JwtValidation)
-	//logoutRouter.HandleFunc("/logout", controllers.Logout)
-
-	refreshRouter := s.router.PathPrefix("/v1/user/").Methods("GET").Subrouter()
+	refreshRouter := s.router.PathPrefix("/" + config.ServerConfig.Version + "/user/").Methods("GET").Subrouter()
 	refreshRouter.Use(middlewares.Cors)
 	refreshRouter.Use(middlewares.JwtValidation)
 	refreshRouter.Use(middlewares.JwtRefreshValidation)
 	refreshRouter.HandleFunc("/refreshToken", controllers.RefreshToken)
 
-	privateRouter := s.router.PathPrefix("/v1/private/").Methods("GET").Subrouter()
+	privateRouter := s.router.PathPrefix("/" + config.ServerConfig.Version + "/cryptocurrency/").Methods("GET").Subrouter()
 	privateRouter.Use(middlewares.Cors)
 	privateRouter.Use(middlewares.JwtValidation)
-	privateRouter.HandleFunc("/test", controllers.TestController)
 	privateRouter.HandleFunc("/btcRate", controllers.BtcRate)
 
 	s.walkRouters()
@@ -112,7 +106,10 @@ func RunServer() {
 	ctx, cancel := context.WithTimeout(context.Background(), wait)
 	defer cancel()
 
-	s.srv.Shutdown(ctx)
+	err := s.srv.Shutdown(ctx)
+	if err != nil {
+		return
+	}
 
 	log.Println("shutting down")
 	os.Exit(0)

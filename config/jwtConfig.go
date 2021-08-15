@@ -11,17 +11,17 @@ type TokenClaims struct {
 	jwt.StandardClaims
 }
 
-type JwtConfigStruct struct {
+type jwtConfigStruct struct {
 	Secret                     string
 	AccessTokenExpiresMinutes  uint
 	RefreshTokenExpiresMinutes uint
 }
 
-var JwtConfig *JwtConfigStruct
+var JwtConfig *jwtConfigStruct
 
 func init() {
 	if SECRET, ok := os.LookupEnv("JWT_SECRET"); ok {
-		JwtConfig = &JwtConfigStruct{
+		JwtConfig = &jwtConfigStruct{
 			Secret:                     SECRET,
 			AccessTokenExpiresMinutes:  60,
 			RefreshTokenExpiresMinutes: 2880,

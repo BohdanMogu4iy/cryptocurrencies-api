@@ -1,32 +1,64 @@
 package config
 
-import u "cryptocurrencies-api/utils"
+import (
+	u "cryptocurrencies-api/utils"
+	"net/http"
+)
 
-type ControllersConfigStruct struct {
-	Messages map[string]map[string]interface{}
+type controllersConfigStruct struct {
+	Messages  map[string]map[string]interface{}
+	Responses map[string]func(w http.ResponseWriter)
 }
 
-var ControllersConfig *ControllersConfigStruct
+var ControllersConfig *controllersConfigStruct
 
 func init() {
-	ControllersConfig = &ControllersConfigStruct{
+	ControllersConfig = &controllersConfigStruct{
 		Messages: map[string]map[string]interface{}{
-			"MissingToken":                    u.Message(false, "Missing authentication Token"),
-			"MalformedToken":                  u.Message(false, "Malformed authentication Token"),
-			"InvalidToken":                    u.Message(false, "Invalid authentication Token"),
-			"ValidationErrorSignatureInvalid": u.Message(true, "Invalid authentication Token signature"),
-			"ValidationErrorClaimsInvalid":    u.Message(true, "Invalid authentication Token claims"),
-			"ExpiredOrNotActiveToken":         u.Message(false, "Authentication Token is either expired or not active yet"),
-			"NotRelevantToken":                u.Message(false, "Not relevant authentication Token"),
-			"InternalServerError":             u.Message(false, "Internal Server Error"),
-			"BadRequest":                      u.Message(false, "Bad request"),
-			"AccountExists":                   u.Message(false, "Account already exists"),
-			"AccountCreated":                  u.Message(true, "Account has been created"),
-			"InvalidEmail":                    u.Message(true, "Invalid email. Check it"),
-			"InvalidEmailOrPassword":          u.Message(true, "Invalid email or password. Please try again or create new account"),
-			"InvalidPassword":                 u.Message(true, "Invalid login credentials. Please try again"),
-			"AccountHasBeenCreated":           u.Message(true, "Account has been created"),
-			"AOK":                             u.Message(true, "AOK, have a nice day!"),
+			"MissingToken":            u.Message(false, "Authorization field is missing"),
+			"InvalidToken":            u.Message(false, "Authentication token is invalid"),
+			"NotRelevantToken":        u.Message(false, "Authentication token is not relevant. Login to refresh tokens."),
+			"ExpiredOrNotActiveToken": u.Message(false, "Authentication token is either expired or not active yet"),
+			"InternalServerError":     u.Message(false, "Internal Server Error"),
+			"BadRequest":              u.Message(false, "Bad request"),
+			"UserExists":              u.Message(false, "User already exists"),
+			"UserCreated":             u.Message(true, "User has been created"),
+			"InvalidCredentials":      u.Message(true, "Invalid credentials. Please try again or create new account"),
+			"AOK":                     u.Message(true, "AOK, have a nice day!"),
+		},
+	}
+	ControllersConfig.Responses = map[string]func(w http.ResponseWriter){
+		"MissingToken": func(w http.ResponseWriter) {
+			w.WriteHeader(http.StatusBadRequest)
+			u.Respond(w, ControllersConfig.Messages["MissingToken"])
+		},
+		"InvalidToken": func(w http.ResponseWriter) {
+			w.WriteHeader(http.StatusUnauthorized)
+			u.Respond(w, ControllersConfig.Messages["InvalidToken"])
+		},
+		"NotRelevantToken": func(w http.ResponseWriter) {
+			w.WriteHeader(http.StatusUnauthorized)
+			u.Respond(w, ControllersConfig.Messages["NotRelevantToken"])
+		},
+		"ExpiredOrNotActiveToken": func(w http.ResponseWriter) {
+			w.WriteHeader(http.StatusUnauthorized)
+			u.Respond(w, ControllersConfig.Messages["ExpiredOrNotActiveToken"])
+		},
+		"UserExists": func(w http.ResponseWriter) {
+			w.WriteHeader(http.StatusForbidden)
+			u.Respond(w, ControllersConfig.Messages["UserExists"])
+		},
+		"InvalidCredentials": func(w http.ResponseWriter) {
+			w.WriteHeader(http.StatusUnauthorized)
+			u.Respond(w, ControllersConfig.Messages["InvalidCredentials"])
+		},
+		"BadRequest": func(w http.ResponseWriter) {
+			w.WriteHeader(http.StatusBadRequest)
+			u.Respond(w, ControllersConfig.Messages["BadRequest"])
+		},
+		"InternalServerError": func(w http.ResponseWriter) {
+			w.WriteHeader(http.StatusInternalServerError)
+			u.Respond(w, ControllersConfig.Messages["InternalServerError"])
 		},
 	}
 }

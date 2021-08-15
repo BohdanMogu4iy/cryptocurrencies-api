@@ -13,16 +13,15 @@ import (
 
 func JwtValidation(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("JwtValidation")
 		tokenHeader := r.Header.Get("Authorization")
 		if tokenHeader == "" {
-			w.WriteHeader(http.StatusUnauthorized)
-			u.Respond(w, config.ControllersConfig.Messages["MissingToken"])
+			config.ControllersConfig.Responses["MissingToken"](w)
 			return
 		}
 
 		if !strings.HasPrefix(tokenHeader, "Bearer ") {
-			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, config.ControllersConfig.Messages["Invalid Authorization field"])
+			config.ControllersConfig.Responses["InvalidToken"](w)
 			return
 		}
 
@@ -38,20 +37,16 @@ func JwtValidation(next http.Handler) http.Handler {
 		if ve, ok := err.(*jwt.ValidationError); !token.Valid && ok {
 			switch {
 			case ve.Errors&jwt.ValidationErrorMalformed != 0:
-				w.WriteHeader(http.StatusForbidden)
-				u.Respond(w, config.ControllersConfig.Messages["MalformedToken"])
+				config.ControllersConfig.Responses["InvalidToken"](w)
 				return
 			case ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0:
-				w.WriteHeader(http.StatusForbidden)
-				u.Respond(w, config.ControllersConfig.Messages["ExpiredOrNotActiveToken"])
+				config.ControllersConfig.Responses["ExpiredOrNotActiveToken"](w)
 				return
 			case ve.Errors&(jwt.ValidationErrorClaimsInvalid) != 0:
-				w.WriteHeader(http.StatusForbidden)
-				u.Respond(w, config.ControllersConfig.Messages["ValidationErrorClaimsInvalid"])
+				config.ControllersConfig.Responses["InvalidToken"](w)
 				return
 			case ve.Errors&(jwt.ValidationErrorSignatureInvalid) != 0:
-				w.WriteHeader(http.StatusForbidden)
-				u.Respond(w, config.ControllersConfig.Messages["ValidationErrorSignatureInvalid"])
+				config.ControllersConfig.Responses["InvalidToken"](w)
 				return
 			default:
 				fmt.Println(err)
@@ -65,10 +60,10 @@ func JwtValidation(next http.Handler) http.Handler {
 
 func JwtRefreshValidation(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("JwtRefreshValidation")
 		tokenHeader := r.Header.Get("Authorization")
 		if tokenHeader == "" {
-			w.WriteHeader(http.StatusUnauthorized)
-			u.Respond(w, config.ControllersConfig.Messages["MissingToken"])
+			config.ControllersConfig.Responses["MissingToken"](w)
 			return
 		}
 
@@ -76,12 +71,10 @@ func JwtRefreshValidation(next http.Handler) http.Handler {
 
 		userToken := models.TokenSchema{UserId: r.Context().Value("UserId")}
 		if values, err := models.TokenStorage.SelectValues([]interface{}{&userToken}, []string{"userId"}); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			u.Respond(w, config.ControllersConfig.Messages["InternalServerError"])
+			config.ControllersConfig.Responses["InternalServerError"](w)
 			return
 		} else if u.GetField(values, "RefreshToken") != token {
-			w.WriteHeader(http.StatusForbidden)
-			u.Respond(w, config.ControllersConfig.Messages["NotRelevantToken"])
+			config.ControllersConfig.Responses["NotRelevantToken"](w)
 			return
 		}
 
