@@ -1,7 +1,9 @@
 package models
 
 import (
+	"cryptocurrencies-api/config"
 	"cryptocurrencies-api/storage"
+	"path"
 	"sync"
 )
 
@@ -12,14 +14,14 @@ var (
 
 type (
 	AccountSchema struct {
-		Login        string `schema:"Login";json:"Login"`
-		Password     string `schema:"Password";json:"Password"`
+		Login    string `schema:"Login";json:"Login"`
+		Password string `schema:"Password";json:"Password"`
 		storage.StandardFields
 	}
 
 	TokenSchema struct {
 		UserId       interface{} `json:"UserId"`
-		RefreshToken string `json:"RefreshToken"`
+		RefreshToken string      `json:"RefreshToken"`
 		storage.StandardFields
 	}
 )
@@ -30,7 +32,7 @@ func init() {
 	AccountStorage = storage.Storage{
 		UnitSchema: AccountSchema{},
 		File: storage.ConcurrencyFile{
-			FileName:           "accounts.json",
+			FileName:           path.Join(config.ServerConfig.DataDir, "accounts.json"),
 			FileMutex:          &accountFileMutex,
 			FileReadWriteMutex: &accountFileReadWriteMutex,
 		},
@@ -41,7 +43,7 @@ func init() {
 	TokenStorage = storage.Storage{
 		UnitSchema: TokenSchema{},
 		File: storage.ConcurrencyFile{
-			FileName:           "tokens.json",
+			FileName:           path.Join(config.ServerConfig.DataDir, "tokens.json"),
 			FileMutex:          &tokenFileMutex,
 			FileReadWriteMutex: &tokenFileReadWriteMutex,
 		},
