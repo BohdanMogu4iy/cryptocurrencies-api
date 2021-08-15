@@ -1,0 +1,30 @@
+{
+ 	"items": [
+ 		{
+ 			"Id": 1,
+ 			"Login": "mogu4iy.kotygoroshko@gmail.com",
+ 			"Password": "$2a$10$Uw/AfY36a2jGEFTPH4TGsOULte0IqvI3U/m6SyiqiktOm9Li3wTO."
+ 		},
+ 		{
+ 			"Id": 2,
+ 			"Login": "mogu4iy.kotygoroshko2@gmail.com",
+ 			"Password": "$2a$10$F8fD5JW1owUTb/Hk6VXxjeDPllX7eYrNmZc2ENsRRIMRcUwilijyC"
+ 		},
+ 		{
+ 			"Id": 3,
+ 			"Login": "1mogu4iy.kotygoroshko@gmail.com",
+ 			"Password": "$2a$10$kXbCBrxF7Ux52spGxMWpnOCqIpLIe9gJyJHCG4u8BlgwZkKBsplF6"
+ 		},
+ 		{
+ 			"Id": 4,
+ 			"Login": "2mogu4iy.kotygoroshko@gmail.com",
+ 			"Password": "$2a$10$XTF6yab0bJpc8nICNg6JjO4khi4Uw/cTXBlBLqFEQ9FGVTzyIZJD2"
+ 		},
+ 		{
+ 			"Login": "email",
+ 			"Password": "$2a$10$xCbP0lqFoTers0QgecWfFO6GU5czqir3tSRfXd7STCsV81SyIcUHK",
+ 			"Id": 5
+ 		}
+ 	],
+ 	"last_id": 5
+ }
