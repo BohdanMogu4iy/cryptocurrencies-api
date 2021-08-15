@@ -27,4 +27,4 @@
 
 .env
 
-./data/*.json
+data/*.json
