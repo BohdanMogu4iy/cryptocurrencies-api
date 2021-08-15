@@ -27,5 +27,4 @@
 
 .env
 
-data/accounts.json
-data/tokens.json
+data
